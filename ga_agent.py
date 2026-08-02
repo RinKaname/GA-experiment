@@ -3,12 +3,12 @@ import random
 from hammurabi_env import DemocraticHammurabi
 
 class GAPolicy:
-    def __init__(self, state_size=8, hidden_size=16, action_size=3):
+    def __init__(self, state_size=9, hidden_size=16, action_size=3):
         self.state_size = state_size
         self.hidden_size = hidden_size
         self.action_size = action_size
 
-        # MLP: 8 -> 16 -> 3
+        # MLP: 9 -> 16 -> 3
         self.W1 = np.random.randn(hidden_size, state_size) * np.sqrt(2.0 / state_size) # He initialization
         self.b1 = np.zeros(hidden_size)
 
@@ -29,7 +29,8 @@ class GAPolicy:
             state_np[4] / 30.0,
             state_np[5] / 100.0,
             state_np[6] / 100.0,
-            state_np[7] / 100.0
+            state_np[7] / 100.0,
+            state_np[8] / 4.0
         ])
 
         # Layer 1
