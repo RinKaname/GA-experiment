@@ -3,12 +3,12 @@ import random
 from hammurabi_env import DemocraticHammurabi
 
 class GAPolicy:
-    def __init__(self, state_size=8, hidden_size=16, action_size=3):
+    def __init__(self, state_size=9, hidden_size=16, action_size=3):
         self.state_size = state_size
         self.hidden_size = hidden_size
         self.action_size = action_size
 
-        # MLP: 8 -> 16 -> 3
+        # MLP: 9 -> 16 -> 3
         self.W1 = np.random.randn(hidden_size, state_size) * np.sqrt(2.0 / state_size) # He initialization
         self.b1 = np.zeros(hidden_size)
 
@@ -29,7 +29,8 @@ class GAPolicy:
             state_np[4] / 30.0,
             state_np[5] / 100.0,
             state_np[6] / 100.0,
-            state_np[7] / 100.0
+            state_np[7] / 100.0,
+            state_np[8] / 4.0
         ])
 
         # Layer 1
@@ -64,16 +65,84 @@ class GAPolicy:
             mask = np.random.rand(*param.shape) < mutation_rate
             param += mask * np.random.randn(*param.shape) * mutation_scale
 
+class GARNNPolicy:
+    def __init__(self, state_size=9, hidden_size=16, action_size=3):
+        self.state_size = state_size
+        self.hidden_size = hidden_size
+        self.action_size = action_size
+
+        # RNN parameters
+        self.W_ih = np.random.randn(hidden_size, state_size) * np.sqrt(2.0 / state_size) # Input to Hidden
+        self.W_hh = np.random.randn(hidden_size, hidden_size) * np.sqrt(2.0 / hidden_size) # Hidden to Hidden
+        self.b_h = np.zeros(hidden_size) # Hidden bias
+
+        self.W_ho = np.random.randn(action_size, hidden_size) * np.sqrt(2.0 / hidden_size) # Hidden to Output
+        self.b_o = np.zeros(action_size) # Output bias
+
+        self.hidden_state = np.zeros(hidden_size)
+
+    def reset(self):
+        self.hidden_state = np.zeros(self.hidden_size)
+
+    def act(self, state):
+        state_np = np.array(state)
+        # Normalize state features
+        norm_state = np.array([
+            state_np[0] / 12.0,
+            state_np[1] / 1000.0,
+            state_np[2] / 10000.0,
+            state_np[3] / 5000.0,
+            state_np[4] / 30.0,
+            state_np[5] / 100.0,
+            state_np[6] / 100.0,
+            state_np[7] / 100.0,
+            state_np[8] / 4.0
+        ])
+
+        # RNN Step: h_t = tanh(W_ih * x_t + W_hh * h_{t-1} + b_h)
+        self.hidden_state = np.tanh(np.dot(self.W_ih, norm_state) + np.dot(self.W_hh, self.hidden_state) + self.b_h)
+
+        # Output Step: y_t = W_ho * h_t + b_o
+        raw_action = np.dot(self.W_ho, self.hidden_state) + self.b_o
+
+        # Actions
+        action_land = np.tanh(raw_action[0])
+        action_feed = 1.0 / (1.0 + np.exp(-raw_action[1]))
+        action_plant = 1.0 / (1.0 + np.exp(-raw_action[2]))
+
+        optimal_feed_grain = state_np[1] * 20
+        actual_feed_grain = action_feed * optimal_feed_grain * 1.5
+        env_action_feed = actual_feed_grain / max(1.0, state_np[2])
+
+        max_plantable_grain = min(state_np[3], state_np[1] * 10)
+        actual_plant_grain = action_plant * max_plantable_grain
+        env_action_plant = actual_plant_grain / max(1.0, state_np[2])
+
+        return [action_land, env_action_feed, env_action_plant]
+
+    def mutate(self, mutation_rate=0.1, mutation_scale=0.1):
+        for param in [self.W_ih, self.W_hh, self.b_h, self.W_ho, self.b_o]:
+            mask = np.random.rand(*param.shape) < mutation_rate
+            param += mask * np.random.randn(*param.shape) * mutation_scale
+
+
 def crossover(parent1, parent2):
-    child = GAPolicy(parent1.state_size, parent1.hidden_size, parent1.action_size)
+    if isinstance(parent1, GAPolicy):
+        child = GAPolicy(parent1.state_size, parent1.hidden_size, parent1.action_size)
+        child.W1 = np.where(np.random.rand(*child.W1.shape) < 0.5, parent1.W1, parent2.W1)
+        child.b1 = np.where(np.random.rand(*child.b1.shape) < 0.5, parent1.b1, parent2.b1)
+        child.W2 = np.where(np.random.rand(*child.W2.shape) < 0.5, parent1.W2, parent2.W2)
+        child.b2 = np.where(np.random.rand(*child.b2.shape) < 0.5, parent1.b2, parent2.b2)
+        return child
 
-    # Uniform crossover for all parameters
-    child.W1 = np.where(np.random.rand(*child.W1.shape) < 0.5, parent1.W1, parent2.W1)
-    child.b1 = np.where(np.random.rand(*child.b1.shape) < 0.5, parent1.b1, parent2.b1)
-    child.W2 = np.where(np.random.rand(*child.W2.shape) < 0.5, parent1.W2, parent2.W2)
-    child.b2 = np.where(np.random.rand(*child.b2.shape) < 0.5, parent1.b2, parent2.b2)
-
-    return child
+    elif isinstance(parent1, GARNNPolicy):
+        child = GARNNPolicy(parent1.state_size, parent1.hidden_size, parent1.action_size)
+        child.W_ih = np.where(np.random.rand(*child.W_ih.shape) < 0.5, parent1.W_ih, parent2.W_ih)
+        child.W_hh = np.where(np.random.rand(*child.W_hh.shape) < 0.5, parent1.W_hh, parent2.W_hh)
+        child.b_h = np.where(np.random.rand(*child.b_h.shape) < 0.5, parent1.b_h, parent2.b_h)
+        child.W_ho = np.where(np.random.rand(*child.W_ho.shape) < 0.5, parent1.W_ho, parent2.W_ho)
+        child.b_o = np.where(np.random.rand(*child.b_o.shape) < 0.5, parent1.b_o, parent2.b_o)
+        return child
 
 def evaluate_policy(policy, num_episodes=3):
     env = DemocraticHammurabi()
@@ -83,6 +152,9 @@ def evaluate_policy(policy, num_episodes=3):
         state = env.reset()
         done = False
         episode_reward = 0
+
+        if hasattr(policy, 'reset'):
+            policy.reset()
 
         while not done:
             action = policy.act(state)

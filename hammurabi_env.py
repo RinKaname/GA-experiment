@@ -25,6 +25,11 @@ class DemocraticHammurabi:
         return self._get_state()
 
     def _get_state(self):
+        years_until_election = 4 - (self.year % 4)
+        if years_until_election == 4:
+            # If year % 4 == 0, the election is THIS year.
+            years_until_election = 0
+
         return [
             self.year,
             self.population,
@@ -33,7 +38,8 @@ class DemocraticHammurabi:
             self.land_price,
             self.farmers_approval,
             self.workers_approval,
-            self.elites_approval
+            self.elites_approval,
+            years_until_election
         ]
 
     def step(self, actions):

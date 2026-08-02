@@ -1,5 +1,5 @@
 import numpy as np
-from ga_agent import GAPolicy, evaluate_policy, crossover
+from ga_agent import GARNNPolicy, evaluate_policy, crossover
 import copy
 import time
 import os
@@ -8,7 +8,7 @@ def train_ga(population_size=200, generations=150, mutation_rate=0.2, mutation_s
     print(f"Starting GA Training: Pop={population_size}, Gens={generations}")
 
     # Initialize population
-    population = [GAPolicy() for _ in range(population_size)]
+    population = [GARNNPolicy() for _ in range(population_size)]
 
 
     best_overall_policy = None
@@ -63,10 +63,11 @@ if __name__ == "__main__":
     best_policy = train_ga(population_size=100, generations=100, mutation_rate=0.2, mutation_scale=0.2)
     print(f"Time taken: {time.time() - start_time:.2f}s")
 
-    # Save best policy weights for MLP
+    # Save best policy weights for RNN
     os.makedirs('models', exist_ok=True)
-    np.save('models/W1.npy', best_policy.W1)
-    np.save('models/b1.npy', best_policy.b1)
-    np.save('models/W2.npy', best_policy.W2)
-    np.save('models/b2.npy', best_policy.b2)
-    print("Saved best policy to models/")
+    np.save('models/W_ih.npy', best_policy.W_ih)
+    np.save('models/W_hh.npy', best_policy.W_hh)
+    np.save('models/b_h.npy', best_policy.b_h)
+    np.save('models/W_ho.npy', best_policy.W_ho)
+    np.save('models/b_o.npy', best_policy.b_o)
+    print("Saved best RNN policy to models/")

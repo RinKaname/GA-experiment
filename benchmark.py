@@ -1,13 +1,14 @@
 import numpy as np
 from hammurabi_env import DemocraticHammurabi
-from ga_agent import GAPolicy
+from ga_agent import GARNNPolicy
 
 def load_policy(model_dir='models'):
-    policy = GAPolicy()
-    policy.W1 = np.load(f"{model_dir}/W1.npy")
-    policy.b1 = np.load(f"{model_dir}/b1.npy")
-    policy.W2 = np.load(f"{model_dir}/W2.npy")
-    policy.b2 = np.load(f"{model_dir}/b2.npy")
+    policy = GARNNPolicy()
+    policy.W_ih = np.load(f"{model_dir}/W_ih.npy")
+    policy.W_hh = np.load(f"{model_dir}/W_hh.npy")
+    policy.b_h = np.load(f"{model_dir}/b_h.npy")
+    policy.W_ho = np.load(f"{model_dir}/W_ho.npy")
+    policy.b_o = np.load(f"{model_dir}/b_o.npy")
     return policy
 
 def benchmark(policy, num_episodes=100):
@@ -23,6 +24,9 @@ def benchmark(policy, num_episodes=100):
     for i in range(num_episodes):
         state = env.reset()
         done = False
+
+        if hasattr(policy, 'reset'):
+            policy.reset()
 
         while not done:
             action = policy.act(state)
