@@ -2,19 +2,21 @@ import numpy as np
 from ga_agent import GAPolicy, evaluate_policy, crossover
 import copy
 import time
+import os
 
-def train_ga(population_size=50, generations=100, mutation_rate=0.1, mutation_scale=0.1):
+def train_ga(population_size=200, generations=150, mutation_rate=0.2, mutation_scale=0.2):
     print(f"Starting GA Training: Pop={population_size}, Gens={generations}")
 
     # Initialize population
-    population = [GAPolicy(8, 3) for _ in range(population_size)]
+    population = [GAPolicy() for _ in range(population_size)]
+
 
     best_overall_policy = None
     best_overall_fitness = -float('inf')
 
     for gen in range(generations):
-        # Evaluate all policies
-        fitnesses = [evaluate_policy(p, num_episodes=5) for p in population]
+        # Evaluate all policies (increased num_episodes to 10 to smooth out RNG)
+        fitnesses = [evaluate_policy(p, num_episodes=10) for p in population]
 
         # Track best
         best_idx = np.argmax(fitnesses)
@@ -30,7 +32,6 @@ def train_ga(population_size=50, generations=100, mutation_rate=0.1, mutation_sc
         new_population = []
 
         # Elitism: keep best 2 policies unchanged
-        # Sort indices by fitness descending
         sorted_indices = np.argsort(fitnesses)[::-1]
         new_population.append(copy.deepcopy(population[sorted_indices[0]]))
         new_population.append(copy.deepcopy(population[sorted_indices[1]]))
@@ -59,10 +60,13 @@ def train_ga(population_size=50, generations=100, mutation_rate=0.1, mutation_sc
 
 if __name__ == "__main__":
     start_time = time.time()
-    best_policy = train_ga(population_size=100, generations=50, mutation_rate=0.2, mutation_scale=0.2)
+    best_policy = train_ga(population_size=100, generations=100, mutation_rate=0.2, mutation_scale=0.2)
     print(f"Time taken: {time.time() - start_time:.2f}s")
 
-    # Save best policy weights
-    np.save('best_weights.npy', best_policy.weights)
-    np.save('best_bias.npy', best_policy.bias)
-    print("Saved best policy to best_weights.npy and best_bias.npy")
+    # Save best policy weights for MLP
+    os.makedirs('models', exist_ok=True)
+    np.save('models/W1.npy', best_policy.W1)
+    np.save('models/b1.npy', best_policy.b1)
+    np.save('models/W2.npy', best_policy.W2)
+    np.save('models/b2.npy', best_policy.b2)
+    print("Saved best policy to models/")
