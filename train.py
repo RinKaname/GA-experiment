@@ -10,6 +10,21 @@ def train_ga(population_size=200, generations=150, mutation_rate=0.2, mutation_s
     # Initialize population
     population = [GARNNPolicy() for _ in range(population_size)]
 
+    # Inject a "safe" baseline policy into the population
+    print("Searching for a baseline seed...")
+    best_seed = population[0]
+    best_seed_fitness = evaluate_policy(best_seed, num_episodes=5)
+    for _ in range(1000):
+        test_policy = GARNNPolicy()
+        fit = evaluate_policy(test_policy, num_episodes=5)
+        if fit > best_seed_fitness:
+            best_seed_fitness = fit
+            best_seed = test_policy
+    print(f"Found baseline seed with fitness: {best_seed_fitness:.2f}")
+
+    # Seed top 5 agents
+    for i in range(5):
+        population[i] = copy.deepcopy(best_seed)
 
     best_overall_policy = None
     best_overall_fitness = -float('inf')
@@ -60,7 +75,7 @@ def train_ga(population_size=200, generations=150, mutation_rate=0.2, mutation_s
 
 if __name__ == "__main__":
     start_time = time.time()
-    best_policy = train_ga(population_size=100, generations=100, mutation_rate=0.2, mutation_scale=0.2)
+    best_policy = train_ga(population_size=200, generations=150, mutation_rate=0.2, mutation_scale=0.2)
     print(f"Time taken: {time.time() - start_time:.2f}s")
 
     # Save best policy weights for RNN
