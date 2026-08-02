@@ -167,12 +167,16 @@ class DemocraticHammurabi:
     def _calculate_reward(self):
         # A simple fitness score
         # Give points for living, population, land, and approval. Penalize starvation.
-        survival_bonus = self.year * 10
+        survival_bonus = self.year * 50 # Increase reward for surviving longer
         wealth_score = (self.land + self.grain / 10.0)
         pop_score = self.population * 2
         approval_score = (self.farmers_approval + self.workers_approval + self.elites_approval)
 
         penalty = self.starved_total * 50
+
+        # Heavy penalty for early termination (losing elections or extreme starvation)
+        if self.is_done and self.year <= self.max_years:
+            penalty += 2000
 
         return survival_bonus + wealth_score + pop_score + approval_score - penalty
 
