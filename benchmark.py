@@ -1,14 +1,21 @@
 import numpy as np
 from hammurabi_env import DemocraticHammurabi
-from ga_agent import GARNNPolicy
+from ga_agent import GAHebbianRNNPolicy
 
 def load_policy(model_dir='models'):
-    policy = GARNNPolicy()
-    policy.W_ih = np.load(f"{model_dir}/W_ih.npy")
-    policy.W_hh = np.load(f"{model_dir}/W_hh.npy")
-    policy.b_h = np.load(f"{model_dir}/b_h.npy")
-    policy.W_ho = np.load(f"{model_dir}/W_ho.npy")
-    policy.b_o = np.load(f"{model_dir}/b_o.npy")
+    policy = GAHebbianRNNPolicy()
+    policy.W_ih_init = np.load(f"{model_dir}/W_ih_init.npy")
+    policy.W_hh_init = np.load(f"{model_dir}/W_hh_init.npy")
+    policy.b_h_init = np.load(f"{model_dir}/b_h_init.npy")
+    policy.W_ho_init = np.load(f"{model_dir}/W_ho_init.npy")
+    policy.b_o_init = np.load(f"{model_dir}/b_o_init.npy")
+
+    policy.alpha_ih = np.load(f"{model_dir}/alpha_ih.npy")
+    policy.alpha_hh = np.load(f"{model_dir}/alpha_hh.npy")
+    policy.alpha_ho = np.load(f"{model_dir}/alpha_ho.npy")
+
+    # Must call reset to load the init weights into active weights
+    policy.reset()
     return policy
 
 def benchmark(policy, num_episodes=100):
