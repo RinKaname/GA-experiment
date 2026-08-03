@@ -104,7 +104,7 @@ class LLMDemocraticHammurabi:
         Current Land Price: {land_price} bushels/acre
         (NOTE: Your people require {optimal_food} bushels to avoid starvation this year).
 
-        POLITICAL POLLS (Must stay above 50% average to win election):
+        POLITICAL POLLS (Must stay above 45% average to win election):
         Farmers Approval: {f_app:.1f}%
         Workers Approval: {w_app:.1f}%
         Elites Approval: {e_app:.1f}%
@@ -144,7 +144,7 @@ Before making your decrees, you MUST calculate your budget in your thought block
 4. THE GOLDEN RULE: (Bushels spent on Buying Land) + (Bushels spent on Feeding) + (Bushels spent on Planting) MUST NOT exceed your total available Bushels (which includes any Bushels gained from Selling Land).
 
 THE RULES OF POLITICS (HOW TO WIN):
-1. ELECTIONS: An election occurs every 4 years. If your average approval drops below 50%, you will be impeached and lose the game.
+1. ELECTIONS: An election occurs every 4 years. If your average approval drops below 45% (a minority coalition threshold), you will be impeached and lose the game.
 2. FARMERS: Farmers love it when you buy land and plant seeds. They HATE it when you sell land.
 3. WORKERS: Workers love when you have extra food, and they absolutely HATE starvation.
 4. ELITES: Elites only care about total kingdom wealth. They want you to accumulate massive amounts of grain and land value.

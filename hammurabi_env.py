@@ -147,7 +147,8 @@ class DemocraticHammurabi:
         # 7. Elections (Every 4 years)
         if self.year % 4 == 0:
             average_approval = (self.farmers_approval + self.workers_approval + self.elites_approval) / 3.0
-            if average_approval < 50.0:
+            # 45% threshold simulates a minority/coalition government
+            if average_approval < 45.0:
                 self.is_done = True
                 self.game_over_reason = f"Lost election with {average_approval:.1f}% approval"
                 return self._get_state(), self._calculate_reward(), self.is_done, {"reason": self.game_over_reason}

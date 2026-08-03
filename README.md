@@ -18,6 +18,7 @@ The environment is built on standard reinforcement learning principles but is fi
 - **State Space (9 features):** Year, Population, Grain, Land, Land Price, Farmer Approval, Worker Approval, Elite Approval, Years to Election.
 - **Action Space:** Continuous fractions for buying/selling land, feeding, and planting.
 - **The Trap:** The reward function utilizes `min(factions)`, forcing the agent to balance all three opposing groups rather than pandering to a majority.
+- **The Minority Coalition:** The election threshold requires an average approval of **45.0%** to stay in power. This softens the mathematical impossibility of absolute dictatorships while preserving the vicious multi-objective tension of democracy.
 
 ## How to Run the Baselines
 
