@@ -273,7 +273,7 @@ def evaluate_policy(policy, num_episodes=3):
             state, reward, done, info = env.step(action)
             episode_reward += reward
 
-        total_reward += reward
+        total_reward += episode_reward
 
     return total_reward / num_episodes
 
