@@ -1,5 +1,5 @@
 import numpy as np
-from ga_agent import GAHebbianRNNPolicy, evaluate_policy, crossover
+from ga_agent import GAPolicy, evaluate_policy, crossover
 import copy
 import time
 import os
@@ -8,14 +8,14 @@ def train_ga(population_size=200, generations=150, mutation_rate=0.2, mutation_s
     print(f"Starting GA Training: Pop={population_size}, Gens={generations}")
 
     # Initialize population
-    population = [GAHebbianRNNPolicy() for _ in range(population_size)]
+    population = [GAPolicy() for _ in range(population_size)]
 
     # Inject a "safe" baseline policy into the population
     print("Searching for a baseline seed...")
     best_seed = population[0]
     best_seed_fitness = evaluate_policy(best_seed, num_episodes=5)
     for _ in range(1000):
-        test_policy = GAHebbianRNNPolicy()
+        test_policy = GAPolicy()
         fit = evaluate_policy(test_policy, num_episodes=5)
         if fit > best_seed_fitness:
             best_seed_fitness = fit
@@ -78,15 +78,10 @@ if __name__ == "__main__":
     best_policy = train_ga(population_size=200, generations=150, mutation_rate=0.2, mutation_scale=0.2)
     print(f"Time taken: {time.time() - start_time:.2f}s")
 
-    # Save best policy weights and plasticity for Hebbian RNN
+    # Save best policy weights for MLP
     os.makedirs('models', exist_ok=True)
-    np.save('models/W_ih_init.npy', best_policy.W_ih_init)
-    np.save('models/W_hh_init.npy', best_policy.W_hh_init)
-    np.save('models/b_h_init.npy', best_policy.b_h_init)
-    np.save('models/W_ho_init.npy', best_policy.W_ho_init)
-    np.save('models/b_o_init.npy', best_policy.b_o_init)
-
-    np.save('models/alpha_ih.npy', best_policy.alpha_ih)
-    np.save('models/alpha_hh.npy', best_policy.alpha_hh)
-    np.save('models/alpha_ho.npy', best_policy.alpha_ho)
-    print("Saved best Hebbian RNN policy to models/")
+    np.save('models/W1.npy', best_policy.W1)
+    np.save('models/b1.npy', best_policy.b1)
+    np.save('models/W2.npy', best_policy.W2)
+    np.save('models/b2.npy', best_policy.b2)
+    print("Saved best MLP policy to models/")
