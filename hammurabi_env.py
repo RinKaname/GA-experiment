@@ -171,20 +171,34 @@ class DemocraticHammurabi:
         return max(0.0, min(100.0, approval))
 
     def _calculate_reward(self):
-        # A simple fitness score
-        # Give points for living, population, land, and approval. Penalize starvation.
-        survival_bonus = self.year * 50 # Increase reward for surviving longer
-        wealth_score = (self.land + self.grain / 10.0)
-        pop_score = self.population * 2
-        approval_score = (self.farmers_approval + self.workers_approval + self.elites_approval)
+        # 1. Survival Bonus
+        survival_bonus = self.year * 100
 
+        # 2. Wealth Score (Fixed Loophole: Land and Grain are roughly equivalent in value)
+        # Assuming avg land price is ~20, an acre is worth 20 grain.
+        # We scale it down so the numbers don't overwhelm other metrics.
+        wealth_score = (self.land * 20 + self.grain) / 50.0
+
+        # 3. Population Score
+        pop_score = self.population * 2
+
+        # 4. Approval Score (Fixed Loophole: Agent is scored on the most unhappy faction)
+        # Using min() forces the agent to balance all three factions.
+        # If any faction drops to 0, they get 0 approval points.
+        approval_score = min(self.farmers_approval, self.workers_approval, self.elites_approval) * 3.0
+
+        # 5. Starvation Penalty
         penalty = self.starved_total * 50
 
-        # Heavy penalty for early termination (losing elections or extreme starvation)
-        if self.is_done and self.year <= self.max_years:
-            penalty += 2000
+        total_score = survival_bonus + wealth_score + pop_score + approval_score - penalty
 
-        return survival_bonus + wealth_score + pop_score + approval_score - penalty
+        # 6. Impeachment Penalty (Fixed Loophole: Slash score drastically instead of flat penalty)
+        if self.is_done and self.year <= self.max_years:
+            # If they fail early, their entire score is divided by 10.
+            # This ruins any hoarded wealth advantage.
+            total_score = total_score / 10.0
+
+        return total_score
 
 if __name__ == "__main__":
     env = DemocraticHammurabi()
