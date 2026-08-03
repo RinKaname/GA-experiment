@@ -28,7 +28,6 @@ def train_ppo(timesteps=200000):
     print("Saved PPO model to models/ppo_hammurabi.zip")
 
 if __name__ == "__main__":
-    # 200k timesteps is roughly equivalent to 16,000 full 12-year episodes.
-    # Our GA trained for 200 pop * 150 gens * 5 episodes = 150,000 episodes,
-    # so PPO is actually getting LESS total environment interaction!
-    train_ppo(timesteps=200000)
+    # Train for 1,000,000 timesteps to allow PPO enough exploration
+    # to escape the early starvation local minimums.
+    train_ppo(timesteps=1000000)
