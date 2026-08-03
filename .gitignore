@@ -1,4 +1,0 @@
-__pycache__/
-*.npy
-*.zip
-ppo_tensorboard/
